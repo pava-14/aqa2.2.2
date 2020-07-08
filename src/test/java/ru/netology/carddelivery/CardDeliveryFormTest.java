@@ -84,8 +84,9 @@ public class CardDeliveryFormTest {
         $(byText(cityDelivery)).click();
 
         element.$("[data-test-id=date] input").click();
+        //Можно все сделать одной сторокой. Расписал для себя, чтобы не забыть :)
         ElementsCollection el = calendar.$$(".calendar__row .calendar__day");
-        SelenideElement day = el.findBy(Condition.attribute("data-day",dateEpochString));
+        SelenideElement day = el.findBy(Condition.attribute("data-day", dateEpochString));
         day.click();
 
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
