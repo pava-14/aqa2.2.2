@@ -35,12 +35,14 @@ public class CardDeliveryFormTest {
         String dayOrder = GetOrderDay(daysDiff);
         String dateOrder = GetOrderDate(daysDiff);
 
-        SelenideElement body = $("body");
+        SelenideElement calendar = $("tbody");
         SelenideElement element = $("form");
         element.$("[data-test-id=city] input").setValue("Но");
         $(byText(cityDelivery)).click();
+
         element.$("[data-test-id=date] input").click();
-        $(byText(dayOrder)).click();
+        calendar.$(byText(dayOrder)).click();
+
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
         element.$("[data-test-id=agreement]").click();
