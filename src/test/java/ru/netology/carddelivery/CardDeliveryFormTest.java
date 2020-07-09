@@ -27,6 +27,18 @@ public class CardDeliveryFormTest {
         return dateFormat.format(LocalDateTime.now().plusDays(daysDiff));
     }
 
+    private int GetMonthArrowContClick(int daysDiff) {
+        return LocalDateTime.now().plusDays(daysDiff).getMonth().getValue()
+                - LocalDateTime.now().getMonth().getValue();
+    }
+
+    private int GetYearArrowContClick(int daysDiff) {
+        return LocalDateTime.now().plusDays(daysDiff).getYear()
+                - LocalDateTime.now().getYear();
+    }
+
+
+
     private String GetOrderDateEpochString(String dateOrder) {
         Date dt = null;
         try {
@@ -49,10 +61,16 @@ public class CardDeliveryFormTest {
         SelenideElement element = $("form");
         element.$("[data-test-id=city] input").setValue("Но");
         $(byText(cityDelivery)).click();
-
         element.$("[data-test-id=date] input").click();
-        calendar.$(byText(dateOrder.substring(0, 2))).click();
 
+//
+//        SelenideElement title = $(".calendar__title");
+//        SelenideElement arrow = title.$("[data-step=12]");
+//        $("body [data-step=1]").click();
+//        ElementsCollection el = calendar.$$(".calendar__row");
+//        SelenideElement day = el.findBy(Condition.attribute("data-step", "12"));
+//
+        calendar.$(byText(dateOrder.substring(0, 2))).click();
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
         element.$("[data-test-id=agreement]").click();
@@ -76,6 +94,9 @@ public class CardDeliveryFormTest {
         $(byText(cityDelivery)).click();
 
         element.$("[data-test-id=date] input").click();
+        //'.calendar__arrow.calendar__arrow_direction_right'
+        // количество кликов разница месяцев текущей и следующей даты
+
         //Можно все сделать одной сторокой. Расписал для себя, чтобы не забыть :)
         ElementsCollection el = calendar.$$(".calendar__row .calendar__day");
         SelenideElement day = el.findBy(Condition.attribute("data-day", dateEpochString));
