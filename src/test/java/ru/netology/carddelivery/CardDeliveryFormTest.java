@@ -22,11 +22,6 @@ public class CardDeliveryFormTest {
     private int daysDiff = 7;
     private String cityDelivery = "Новосибирск";
 
-    private String GetOrderDay(int daysDiff) {
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd");
-        return dateFormat.format(LocalDateTime.now().plusDays(daysDiff));
-    }
-
     private String GetOrderDate(int daysDiff) {
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         return dateFormat.format(LocalDateTime.now().plusDays(daysDiff));
@@ -49,7 +44,6 @@ public class CardDeliveryFormTest {
 
         open("http://localhost:9999");
 
-        String dayOrder = GetOrderDay(daysDiff);
         String dateOrder = GetOrderDate(daysDiff);
 
         SelenideElement calendar = $("tbody");
@@ -58,7 +52,7 @@ public class CardDeliveryFormTest {
         $(byText(cityDelivery)).click();
 
         element.$("[data-test-id=date] input").click();
-        calendar.$(byText(dayOrder)).click();
+        calendar.$(byText(dateOrder.substring(0, 2))).click();
 
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
