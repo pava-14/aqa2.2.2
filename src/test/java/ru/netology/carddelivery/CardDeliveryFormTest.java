@@ -58,6 +58,7 @@ public class CardDeliveryFormTest {
             repeat++;
         }
 
+        //TODO: разница может быть отрицательной. Добавить стрелку влево для месяца, если месяц меньше текущего
         button = el.get(3);
         repeat = 0;
         while (repeat < getMonthArrowContClick(daysOffset)) {
