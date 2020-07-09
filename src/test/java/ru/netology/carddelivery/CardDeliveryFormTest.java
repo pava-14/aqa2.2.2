@@ -11,15 +11,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-import static com.codeborne.selenide.Condition.exactText;
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selectors.withText;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.*;
 
 public class CardDeliveryFormTest {
-    private int daysDiff = 7;
+    private int daysDiff = 32;
     private String cityDelivery = "Новосибирск";
 
     private String GetOrderDate(int daysDiff) {
@@ -36,7 +34,6 @@ public class CardDeliveryFormTest {
         return LocalDateTime.now().plusDays(daysDiff).getYear()
                 - LocalDateTime.now().getYear();
     }
-
 
 
     private String GetOrderDateEpochString(String dateOrder) {
@@ -57,19 +54,28 @@ public class CardDeliveryFormTest {
 
         open("http://localhost:9999");
 
+        SelenideElement body = $("body");
         SelenideElement calendar = $("tbody");
         SelenideElement element = $("form");
         element.$("[data-test-id=city] input").setValue("Но");
         $(byText(cityDelivery)).click();
         element.$("[data-test-id=date] input").click();
 
-//
-//        SelenideElement title = $(".calendar__title");
-//        SelenideElement arrow = title.$("[data-step=12]");
-//        $("body [data-step=1]").click();
-//        ElementsCollection el = calendar.$$(".calendar__row");
-//        SelenideElement day = el.findBy(Condition.attribute("data-step", "12"));
-//
+        ElementsCollection el = body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow");
+        SelenideElement button = el.get(2);
+        int repeat = 0;
+        while (repeat < GetYearArrowContClick(daysDiff)) {
+            button.click();
+            repeat++;
+        }
+
+        button = el.get(3);
+        repeat = 0;
+        while (repeat < GetMonthArrowContClick(daysDiff)) {
+            button.click();
+            repeat++;
+        }
+
         calendar.$(byText(dateOrder.substring(0, 2))).click();
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
@@ -88,18 +94,36 @@ public class CardDeliveryFormTest {
 
         open("http://localhost:9999");
 
+        SelenideElement body = $("body");
         SelenideElement calendar = $("tbody");
         SelenideElement element = $("form");
         element.$("[data-test-id=city] input").setValue("Но");
         $(byText(cityDelivery)).click();
 
         element.$("[data-test-id=date] input").click();
-        //'.calendar__arrow.calendar__arrow_direction_right'
-        // количество кликов разница месяцев текущей и следующей даты
 
-        //Можно все сделать одной сторокой. Расписал для себя, чтобы не забыть :)
-        ElementsCollection el = calendar.$$(".calendar__row .calendar__day");
-        SelenideElement day = el.findBy(Condition.attribute("data-day", dateEpochString));
+        ElementsCollection el = body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow");
+        SelenideElement button = el.get(2);
+
+        button.waitUntil(visible, 5000);
+
+        int repeat = 0;
+        int yearClickCount = GetYearArrowContClick(daysDiff);
+        while (repeat < GetYearArrowContClick(daysDiff)) {
+            button.click();
+            repeat++;
+        }
+
+        button = el.get(3);
+        repeat = 0;
+        int monthClickCount = GetMonthArrowContClick(daysDiff);
+        while (repeat < GetMonthArrowContClick(daysDiff)) {
+            button.click();
+            repeat++;
+        }
+
+        ElementsCollection calendarRows = calendar.$$(".calendar__row .calendar__day");
+        SelenideElement day = calendarRows.findBy(Condition.attribute("data-day", dateEpochString));
         day.click();
 
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
