@@ -41,10 +41,9 @@ public class CardDeliveryFormTest {
 
     @Test
     public void shouldCreditCardDeliveryOrderByText() {
+        String dateOrder = GetOrderDate(daysDiff);
 
         open("http://localhost:9999");
-
-        String dateOrder = GetOrderDate(daysDiff);
 
         SelenideElement calendar = $("tbody");
         SelenideElement element = $("form");
@@ -66,11 +65,10 @@ public class CardDeliveryFormTest {
 
     @Test
     public void shouldCreditCardDeliveryOrderByCss() {
-
-        open("http://localhost:9999");
-
         String dateOrder = GetOrderDate(daysDiff);
         String dateEpochString = GetOrderDateEpochString(dateOrder);
+
+        open("http://localhost:9999");
 
         SelenideElement calendar = $("tbody");
         SelenideElement element = $("form");
