@@ -11,67 +11,99 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selectors.withText;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
 
 public class CardDeliveryFormTest {
-    private int daysOffset = 37;
+    private int daysOffset = 237;
     private String cityDelivery = "Новосибирск";
+    private LocalDateTime orderDate = LocalDateTime.now().plusDays(daysOffset);
+    private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private String getOrderDate(int daysOffset) {
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        return dateFormat.format(LocalDateTime.now().plusDays(daysOffset));
-    }
-
-    private int getMonthArrowContClick(int daysOffset) {
-        return LocalDateTime.now().plusDays(daysOffset).getMonth().getValue()
-                - LocalDateTime.now().getMonth().getValue();
-    }
-
-    private int getYearArrowContClick(int daysOffset) {
-        return LocalDateTime.now().plusDays(daysOffset).getYear()
-                - LocalDateTime.now().getYear();
-    }
-
-    private String getOrderDateEpochString(String dateOrder) {
+    private String getOrderDateEpochString(LocalDateTime dateTime) {
         Date dt = null;
         try {
-            dt = new SimpleDateFormat("dd.MM.yyyy").parse(dateOrder);
+            dt = new SimpleDateFormat("dd.MM.yyyy").parse(dateFormat.format(dateTime));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        long epoch = dt.getTime();
-
-        return String.valueOf(epoch);
+        return String.valueOf(dt.getTime());
     }
 
-    private void selectYearMonth () {
+    /*
+    arrowIndex:
+        1 - month's left arrow "-1"
+        2 - year's right arrow "12"
+        3 - month's right arrow "1"
+     */
+    private void calendarArrowClick(int arrowIndex) {
         SelenideElement body = $("body");
-        ElementsCollection el = body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow");
-        SelenideElement button = el.get(2);
+        //
+        ElementsCollection arrows = body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow");
+        SelenideElement arrow = arrows.findBy(Condition.attribute("data-step", "1"));
+        //
+        body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow")
+                .get(arrowIndex).click();
+    }
 
+    /*
+    data-step value:
+            "-1" - month's left arrow
+            "12" - year's right arrow "12"
+            "1" - month's right arrow "1"
+    */
+    private void calendarArrowClick(String dataStep) {
+        SelenideElement body = $("body");
+        body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow")
+                .findBy(Condition.attribute("data-step", dataStep)).click();
+    }
+
+    private void rightArrowYearClick() {
+        calendarArrowClick(2);
+    }
+
+    private void rightArrowMonthClick() {
+        calendarArrowClick(3);
+    }
+
+    private void leftArrowMonthClick() {
+        calendarArrowClick(1);
+    }
+
+    private int getMonthArrowClickCount() {
+        return orderDate.getMonth().getValue() - LocalDateTime.now().getMonth().getValue();
+    }
+
+    private int getYearArrowClickCount() {
+        return orderDate.getYear() - LocalDateTime.now().getYear();
+    }
+
+    private void selectYearMonth(int yearArrowClickCount, int monthArrowClickCount) {
         int repeat = 0;
-        while (repeat < getYearArrowContClick(daysOffset)) {
-            button.click();
+        while (repeat < yearArrowClickCount) {
+            rightArrowYearClick();
             repeat++;
         }
-
-        //TODO: разница может быть отрицательной. Добавить стрелку влево для месяца, если месяц меньше текущего
-        button = el.get(3);
         repeat = 0;
-        while (repeat < getMonthArrowContClick(daysOffset)) {
-            button.click();
-            repeat++;
+        if (monthArrowClickCount < 0) {
+            while (repeat > monthArrowClickCount) {
+                leftArrowMonthClick();
+                repeat--;
+            }
+        } else {
+            while (repeat < monthArrowClickCount) {
+                rightArrowMonthClick();
+                repeat++;
+            }
         }
-
     }
 
     @Test
     public void shouldCreditCardDeliveryOrderByText() {
-        String dateOrder = getOrderDate(daysOffset);
-
         open("http://localhost:9999");
 
         SelenideElement calendar = $(".calendar");
@@ -80,9 +112,9 @@ public class CardDeliveryFormTest {
         $(byText(cityDelivery)).click();
         element.$("[data-test-id=date] input").click();
 
-        selectYearMonth();
+        selectYearMonth(getYearArrowClickCount(), getMonthArrowClickCount());
 
-        calendar.$(byText(dateOrder.substring(0, 2).replace("0", ""))).click();
+        calendar.$(byText(String.valueOf(orderDate.getDayOfMonth()))).click();
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
         element.$("[data-test-id=agreement]").click();
@@ -90,36 +122,32 @@ public class CardDeliveryFormTest {
 
         $(withText("Успешно!")).waitUntil(visible, 15000);
         $(byText("Встреча успешно забронирована на")).shouldBe(visible);
-        $(byText(dateOrder)).shouldBe(visible);
+        $(byText(dateFormat.format(orderDate))).shouldBe(visible);
     }
 
     @Test
     public void shouldCreditCardDeliveryOrderByCss() {
-        String dateOrder = getOrderDate(daysOffset);
-        String dateEpochString = getOrderDateEpochString(dateOrder);
-
         open("http://localhost:9999");
 
-        SelenideElement body = $("body");
         SelenideElement calendar = $(".calendar");
         SelenideElement element = $("form");
         element.$("[data-test-id=city] input").setValue("Но");
         $(byText(cityDelivery)).click();
         element.$("[data-test-id=date] input").click();
 
-        selectYearMonth();
+        selectYearMonth(getYearArrowClickCount(), getMonthArrowClickCount());
 
         ElementsCollection calendarRows = calendar.$$(".calendar__row .calendar__day");
-        SelenideElement day = calendarRows.findBy(Condition.attribute("data-day", dateEpochString));
-        day.click();
+        calendarRows.findBy(Condition.attribute("data-day",
+                getOrderDateEpochString(orderDate))).click();
 
         element.$("[data-test-id=name] input").setValue("Иванов Петр Петрович");
         element.$("[data-test-id=phone] input").setValue("+79099099090");
         element.$("[data-test-id=agreement]").click();
-
         element.$$("button").find(exactText("Забронировать")).click();
+
         $(withText("Успешно!")).waitUntil(visible, 15000);
         $(byText("Встреча успешно забронирована на")).shouldBe(visible);
-        $(byText(dateOrder)).shouldBe(visible);
+        $(byText(dateFormat.format(orderDate))).shouldBe(visible);
     }
 }
