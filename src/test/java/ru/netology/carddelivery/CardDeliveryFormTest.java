@@ -15,8 +15,7 @@ import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selectors.withText;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.*;
 
 public class CardDeliveryFormTest {
     private int daysOffset = 237;
@@ -41,13 +40,7 @@ public class CardDeliveryFormTest {
         3 - month's right arrow "1"
      */
     private void calendarArrowClick(int arrowIndex) {
-        SelenideElement body = $("body");
-        //
-        ElementsCollection arrows = body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow");
-        SelenideElement arrow = arrows.findBy(Condition.attribute("data-step", "1"));
-        //
-        body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow")
-                .get(arrowIndex).click();
+        $$(".calendar__arrow").get(arrowIndex).click();
     }
 
     /*
@@ -57,8 +50,7 @@ public class CardDeliveryFormTest {
             "1" - month's right arrow "1"
     */
     private void calendarArrowClick(String dataStep) {
-        SelenideElement body = $("body");
-        body.$$(".popup.popup_direction_bottom-left.popup_target_anchor  .calendar__arrow")
+        $$(".calendar__arrow")
                 .findBy(Condition.attribute("data-step", dataStep)).click();
     }
 
